@@ -12,9 +12,9 @@
 #include "../tool/log/log.h"
 #include "../tool/map/hashmap_int.h"
 
+int* str_convert_int(String *value_str);
 int print_k_exe(String **tokens , int len , int curr_i , Hashmap *HASHMAP_VOID);
 int int_k_exe(String **tokens , int len , int curr_i , Hashmap *HASHMAP_VOID);
-int str_convert_int(String *value_str);
 int int_k_exe(String **tokens , int len , int curr_i , Hashmap *HASHMAP_VOID);
 void print_var(Hashmap *HASHMAP_VOID , VAR *var , char *var_name);
 #endif //CRANEC_CGM_GRAMMA_H

@@ -14,9 +14,10 @@
   #define CRA_DEBUG
 
 #ifdef CRA_DEBUG
-    #define LOG(content) printf("[DEBUG] %s\n" , (content));
-    #define LOG_C(front , content) printf("[DEBUG] [%s] %s\n" , (front) , (content));
-    #define LOG_CHR(front , content) printf("[DEBUG] [%s] %c\n" , (front) , (content));
+    #define LOG(content) printf("[DEBUG] %s\n" , (content))
+    #define LOG_C(front , content) printf("[DEBUG] [%s] %s\n" , (front) , (content))
+    #define LOG_CHR(front , content) printf("[DEBUG] [%s] %c\n" , (front) , (content))
+    #define LOG_I(front , content) printf("[DEBUG] [%s] %d\n" , (front) , (content))
 #endif
 
 typedef struct Hashmap Hashmap;

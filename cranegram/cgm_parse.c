@@ -101,11 +101,10 @@ void __CRVM_RUN__(XokMalloc *xokmalloc , TOKENSB *tokens , int len , Hashmap *vo
                 i = CraPrintf_fule(xokmalloc , tokens , void_hashmap , i);
                 continue;
             case INT_K:
-                i = CraTypeVar_Parse(xokmalloc , t , void_hashmap , i);
+                i = CraTypeVar_Parse(xokmalloc , tokens , void_hashmap  ,i);
                 continue;
             case DEFAULT:
                 break;
         }
     }
-
 }

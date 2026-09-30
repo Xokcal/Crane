@@ -28,7 +28,7 @@ int* str_convert_int(String *value_str){
                 v += 0;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -37,7 +37,7 @@ int* str_convert_int(String *value_str){
                 v += 1;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -46,7 +46,7 @@ int* str_convert_int(String *value_str){
                 v += 2;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -55,7 +55,7 @@ int* str_convert_int(String *value_str){
                 v += 3;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -64,7 +64,7 @@ int* str_convert_int(String *value_str){
                 v += 4;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -73,7 +73,7 @@ int* str_convert_int(String *value_str){
                 v += 5;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -82,7 +82,7 @@ int* str_convert_int(String *value_str){
                 v += 6;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -91,7 +91,7 @@ int* str_convert_int(String *value_str){
                 v += 7;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -100,7 +100,7 @@ int* str_convert_int(String *value_str){
                 v += 8;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;
@@ -109,7 +109,7 @@ int* str_convert_int(String *value_str){
                 v += 9;
                 if(i == value_str->length - 1) {
                     int *end_r = (int *)malloc(sizeof(int ));
-                    end_r = &v;
+                    *end_r = v;
                     return end_r;
                 }
                 v *= 10;

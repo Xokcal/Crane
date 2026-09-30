@@ -9,11 +9,5 @@
 #define TYPE_VARS_LEN 3
 #define CALC_SIGN_LEN 5
 
-char *typeVars[TYPE_VARS_LEN] = {
-    "int" , "float" , "string"
-};
-
-char *calcSigns[CALC_SIGN_LEN] = {"+" , "-" , "*" , "/" , "^"};
-
 
 int CraTypeVar_Parse(XokMalloc *xokmalloc, TOKENSB *t, Hashmap *hashmap, int curr);

@@ -154,10 +154,11 @@ CraPrintf_fule(XokMalloc *xokmalloc ,TOKENSB *t , Hashmap *hashmap , int curr)
         if(!is_entre_varArgs&&compare(token , ",")){
             i = printf_varArgs_collect(t , printfVarArg , i , &is_entre_varArgs);
             is_over_varArgs_collect = 1;
-            content;
+            continue;
         }
         if(is_entre_varArgs&&compare(token , ";")){
             printf_output(placeHold ,printfVarArg);
+            printf("");
             return i;
         }
     }

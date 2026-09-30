@@ -1,2 +1,3 @@
-printf("%s" , "hello Crane!!");
-int a = 0;
+printf("%s\n" , "hello Crane!!");
+printf("Hajimi \n");
+int a = 10 * 2;
