@@ -52,113 +52,74 @@ judge_calcSign_priority(String *calcSign)
 static int
 various_calcSign_calc(int *p1 , int *p2 , String *calcSign)
 {
-    if(compare(calcSign , "+"))return (*p1) + (*p2);if(compare(calcSign , "-"))return (*p1) - (*p2);
-    if(compare(calcSign , "*"))return (*p1) * (*p2);if(compare(calcSign , "/"))return (*p1) / (*p2);
+    if(compare(calcSign , "+"))return (*p1) + (*p2);
+    if(compare(calcSign , "-"))return (*p1) - (*p2);
+    if(compare(calcSign , "*"))return (*p1) * (*p2);
+    if(compare(calcSign , "/"))return (*p1) / (*p2);
     return 0;
 }
 
-// int a = 20 * 14 + 9 * 4;
-
-// int a = 2 + 45 + 9 * 6;
 static void
 prioritySign_calc_core(AssignStack *doubleStack , AssignStack *assignStack 
     , int *v_i , String *curr_calcSign , int *up_sign_priority , int *c_i , int *double_name_i)
 {
-    LOG("**************************** priority(start) *****************************");
     int* temp_stack_v = str_convert_int(doubleStack->var_name[doubleStack->var_name_count - 1]);
-    LOG_I("up name count!!" , doubleStack->var_name_count);
-    LOG_I("temp" , *temp_stack_v);
     int* next_stack_v = str_convert_int(assignStack->var_name[++(*v_i)]);
-    LOG_I("next" , *next_stack_v);
     int r = various_calcSign_calc(temp_stack_v , next_stack_v , curr_calcSign);
-    LOG_I("res" , r);
     String *r_str = int_to_String(r);
-    LOG_I("insert place" , doubleStack->var_name_count);
     copy_string(r_str ,doubleStack->var_name[doubleStack->var_name_count - 1]);
     string_free(r_str);
-    LOG_C("temp_R" , doubleStack->var_name[0]->str);
-    (*up_sign_priority) = 1 ; (*c_i)++;
-    LOG("***************************** priority (end)*********************************");
+    (*up_sign_priority) = 1 , (*c_i)++;
 }
 
 static String*
-doubleStack_lowPriority_calc(AssignStack *doubleStack)
+doubleStack_lowPriority_calc(AssignStack *assignStack , AssignStack *doubleStack , int c_i)
 {
-    LOG("entre lowPriority!!");
+    if(c_i == 0)return assignStack->var_name[0];
     int doubleStack_varName_count = 0 , doubleStack_calc_count = 0;
-    LOG_I("+++double Calc" , doubleStack->calc_sign_count);
     while(doubleStack_calc_count < (doubleStack->calc_sign_count)){
-        // [2 , 45 , 54]  -->  [2 , 45]
-        LOG("entre while!!");
         String *currSign = doubleStack->calc_sign[doubleStack_calc_count++];
-        LOG_C("currSign" , currSign->str);
         int *p1 = str_convert_int(doubleStack->var_name[doubleStack_varName_count++]);
-        LOG_I("p1" , *p1);
         int *p2 = str_convert_int(doubleStack->var_name[doubleStack_varName_count++]);
-        LOG_I("p2" , *p2);
         int temp_r = various_calcSign_calc(p1 , p2 , currSign);
-        LOG_I("temp_r" , temp_r);
-        // storage to p2 position.  --   [16 , 2] [+]  ------------------->  [18]
-        //                                |    \______________. p2             \____________. p2
+        // storage to p2 position.  --   [16 , 2] [+]  ------------------->  [? , 18]
+        //                                |    \______________. p2                 \____________. p2
         //                                \______________. p1
         copy_string(int_to_String(temp_r) , doubleStack->var_name[--doubleStack_varName_count]);
     }
-    LOG_C("+++++++++++++++++++++++++++++++++++++++ RR" , doubleStack->var_name[doubleStack->var_name_count - 1]->str);
     return doubleStack->var_name[doubleStack->var_name_count - 1];
 }
 
-// int a = 5 * 2;
-
-// int a = 2 + 45 + 9 * 6;
+// int a = 2 + 1;
 static String*
 AssignStack_DoubleStack_calc(XokMalloc *xokmalloc ,AssignStack *assignStack)
 {
-    LOG("=============== NETRE DOUBLE ================");
-    int v_i = 0 , c_i = 0 , double_name_i , calc_count , up_sign_priority = 0;
+    int v_i = 0 , c_i = 0 , double_name_i , up_sign_priority = 0;
     AssignStack *doubleStack = create_AssignStack(xokmalloc);
-    while(c_i < assignStack->calc_sign_count){ // 1
-        LOG("=================== restart!! ===================");
-        printf("%d\n" , up_sign_priority);
+    while(c_i <= assignStack->calc_sign_count){
         if(up_sign_priority) goto upPriority;
-        copy_string(assignStack->var_name[v_i] ,doubleStack->var_name[doubleStack->var_name_count++]); // 9 --> count : 3
-        LOG_I("track var_name_count" , doubleStack->var_name_count);
+        copy_string(assignStack->var_name[v_i] ,doubleStack->var_name[doubleStack->var_name_count++]);
         upPriority:
         String *curr_calcSign = assignStack->calc_sign[c_i];
-        printf("[calc sign is priority!]: %d\n" , judge_calcSign_priority(curr_calcSign));
         if(judge_calcSign_priority(curr_calcSign)){
-            LOG("entre priority!!");
-            prioritySign_calc_core(doubleStack , assignStack , &v_i , curr_calcSign , &up_sign_priority , &c_i , &double_name_i);
-            LOG(" * is ok!!");
-            continue;
-        }
-        calc_count++;
-        LOG_I("------------------------calc count" , calc_count);
-        copy_string(curr_calcSign , doubleStack->calc_sign[doubleStack->calc_sign_count++]);
-        up_sign_priority = 0;v_i++;c_i++;
+            prioritySign_calc_core(doubleStack , assignStack , &v_i , curr_calcSign 
+                , &up_sign_priority , &c_i , &double_name_i);continue;
+        }copy_string(curr_calcSign , doubleStack->calc_sign[doubleStack->calc_sign_count++]);
+        up_sign_priority = 0,v_i++,c_i++;
     }
-    LOG("OUT!!");
-    //doubleStack->calc_sign_count--;
-    LOG_I("end double name count!!" , doubleStack->var_name_count);
-    for(int i = 0 ; i < doubleStack->var_name_count; i++){
-        LOG_C("FOR double V" , doubleStack->var_name[i]->str);
-    }
-    return doubleStack_lowPriority_calc(doubleStack);
+    return doubleStack_lowPriority_calc(assignStack , doubleStack , c_i);
 }
 
 static int
-typeVar_AssignStack_collect(XokMalloc *xokmalloc , TOKENSB *t
-    , int curr , AssignStack *assignStack)
+typeVar_AssignStack_collect(XokMalloc *xokmalloc , TOKENSB *t, int curr , AssignStack *assignStack)
 {
     for(int i = curr; i < t->count ; i++){
         String *token = t->tokens[i];
         if(compare(token , ";"))return i - 1;
-        if(!isContainKeys(token)&&!is_calc_sign(token)){ // varName
-            copy_string(token , assignStack->var_name[assignStack->var_name_count++]);
-            continue;
-        }if(is_calc_sign(token)){ // "+" "-" "*" "/"
-            copy_string(token , assignStack->calc_sign[assignStack->calc_sign_count++]);
-            continue;
-        }
+        if(!isContainKeys(token)&&!is_calc_sign(token))
+        copy_string(token , assignStack->var_name[assignStack->var_name_count++]);
+        if(is_calc_sign(token))
+        copy_string(token , assignStack->calc_sign[assignStack->calc_sign_count++]);
     }
 }
 
@@ -181,15 +142,12 @@ CraTypeVar_Parse(XokMalloc *xokmalloc ,TOKENSB *t , Hashmap *hashmap , int curr)
         }
         if(compare(token , ";")){
             R = AssignStack_DoubleStack_calc(xokmalloc , assignStack);
-            LOG_C("_____________RRR_____________" , R->str);
+            LOG_C("" , R->str);
             map_put(hashmap , name->str , k , R);
             return i;
         }
         if(is_over_equal){
             i = typeVar_AssignStack_collect(xokmalloc , t , i , assignStack);
-            for(int j = 0; j < assignStack->var_name_count; j++){
-                LOG_C("assign" , assignStack->var_name[j]->str);
-            }
             continue;
         }
         if(!is_over_type&&isTypeVarToken(token)){
