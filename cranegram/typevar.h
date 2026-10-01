@@ -9,5 +9,10 @@
 #define TYPE_VARS_LEN 3
 #define CALC_SIGN_LEN 5
 
+#define CALCULATE_ADD(p1 , p2)(*(p1)) + (*(p2))
+#define CALCULATE_SUB(p1 , p2)(*(p1)) - (*(p2))
+#define CALCULATE_MUL(p1 , p2)(*(p1)) * (*(p2))
+#define CALCULATE_DIVI(p1 , p2)(*(p1)) / (*(p2))
+
 
 int CraTypeVar_Parse(XokMalloc *xokmalloc, TOKENSB *t, Hashmap *hashmap, int curr);
