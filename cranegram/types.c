@@ -121,7 +121,7 @@ PlaceHold_is_outsize(PlaceHold *placeHold)
         extend_PlaceHold(placeHold);
 }
 
-
+//
 PrintfVarArg *
 create_PrintfVarArg(void)
 {
@@ -129,18 +129,29 @@ create_PrintfVarArg(void)
     if (pva == NULL) return NULL;
 
     pva->size = 10;
+
+    // 1. 分配 args
     pva->args = (String**)malloc(pva->size * sizeof(String*));
     if (pva->args == NULL) {
         free(pva);
         return NULL;
     }
 
+    // 2. 分配 args_type
+    pva->args_type = (String**)malloc(pva->size * sizeof(String*));
+    if (pva->args_type == NULL) {
+        free(pva->args);
+        free(pva);
+        return NULL;
+    }
+
+    // 3. 初始化
     for (int i = 0; i < pva->size; i++) {
-        pva->args[i] = create_string("");
+        pva->args[i]      = create_string("");
+        pva->args_type[i] = create_string("");
     }
 
     pva->args_count = 0;
-
     return pva;
 }
 
@@ -151,26 +162,41 @@ extend_PrintfVarArg(PrintfVarArg *old)
 
     int new_size = old->size * 2;
 
-    // 1. 分配新数组
+    // 1. 分配新 args
     String **new_args = (String**)malloc(new_size * sizeof(String*));
     if (new_args == NULL) return old;
 
-    // 2. 复制旧指针
+    // 2. 分配新 args_type
+    String **new_types = (String**)malloc(new_size * sizeof(String*));
+    if (new_types == NULL) {
+        free(new_args);
+        return old;
+    }
+
+    // 3. 复制旧指针（args）
     for (int i = 0; i < old->size; i++) {
         new_args[i] = old->args[i];
     }
 
-    // 3. 新位置创建空 String
-    for (int i = old->size; i < new_size; i++) {
-        new_args[i] = create_string("");
+    // 4. 复制旧指针（args_type）
+    for (int i = 0; i < old->size; i++) {
+        new_types[i] = old->args_type[i];
     }
 
-    // 4. 释放旧数组
-    free(old->args);
+    // 5. 新位置创建空 String
+    for (int i = old->size; i < new_size; i++) {
+        new_args[i]  = create_string("");
+        new_types[i] = create_string("");
+    }
 
-    // 5. 更新
-    old->args = new_args;
-    old->size = new_size;
+    // 6. 释放旧数组
+    free(old->args);
+    free(old->args_type);
+
+    // 7. 更新
+    old->args      = new_args;
+    old->args_type = new_types;
+    old->size      = new_size;
 
     return old;
 }
@@ -180,7 +206,7 @@ free_PrintfVarArg(PrintfVarArg *pva)
 {
     if (pva == NULL) return;
 
-    // 1. 释放每个 String
+    // 1. 释放每个 String（args）
     if (pva->args != NULL) {
         for (int i = 0; i < pva->size; i++) {
             if (pva->args[i] != NULL) {
@@ -190,7 +216,17 @@ free_PrintfVarArg(PrintfVarArg *pva)
         free(pva->args);
     }
 
-    // 2. 释放结构体本身
+    // 2. 释放每个 String（args_type）
+    if (pva->args_type != NULL) {
+        for (int i = 0; i < pva->size; i++) {
+            if (pva->args_type[i] != NULL) {
+                string_free(pva->args_type[i]);
+            }
+        }
+        free(pva->args_type);
+    }
+
+    // 3. 释放结构体本身
     free(pva);
 }
 
@@ -280,4 +316,97 @@ extend_AssignStack(XokMalloc *xokmalloc, AssignStack *old)
     assignStack->size = new_capacity;
 
     return assignStack;
+}
+
+
+PrintfArgsValue *
+create_PrintfArgsValue(XokMalloc *xokmalloc)
+{
+    int capacity = 10;
+
+    PrintfArgsValue *pav = (PrintfArgsValue *)xalloc_XokMalloc(
+        xokmalloc, sizeof(PrintfArgsValue));
+
+    pav->printfargs_value = (void **)xalloc_XokMalloc(
+        xokmalloc, sizeof(void *) * capacity);
+
+    pav->type = (String **)xalloc_XokMalloc(
+        xokmalloc, sizeof(String *) * capacity);
+
+    for (int i = 0; i < capacity; i++) {
+        pav->printfargs_value[i] = NULL;
+        pav->type[i]            = create_string("");
+    }
+
+    pav->value_count = 0;
+    pav->size        = capacity;
+
+    return pav;
+}
+
+PrintfArgsValue *
+extend_PrintfArgsValue(XokMalloc *xokmalloc, PrintfArgsValue *old)
+{
+    int new_capacity = old->size * 2;
+
+    PrintfArgsValue *pav = (PrintfArgsValue *)xalloc_XokMalloc(
+        xokmalloc, sizeof(PrintfArgsValue));
+
+    pav->printfargs_value = (void **)xalloc_XokMalloc(
+        xokmalloc, sizeof(void *) * new_capacity);
+
+    pav->type = (String **)xalloc_XokMalloc(
+        xokmalloc, sizeof(String *) * new_capacity);
+
+    // 复制旧 values（浅拷贝，只复制指针）
+    for (int i = 0; i < old->value_count; i++) {
+        pav->printfargs_value[i] = old->printfargs_value[i];
+    }
+    // 新位置初始化
+    for (int i = old->value_count; i < new_capacity; i++) {
+        pav->printfargs_value[i] = NULL;
+    }
+
+    // 复制旧 type
+    for (int i = 0; i < old->value_count; i++) {
+        pav->type[i] = create_string("");
+        copy_string(old->type[i], pav->type[i]);
+    }
+    // 新位置初始化
+    for (int i = old->value_count; i < new_capacity; i++) {
+        pav->type[i] = create_string("");
+    }
+
+    pav->value_count = old->value_count;
+    pav->size        = new_capacity;
+
+    return pav;
+}
+
+void
+free_PrintfArgsValue(PrintfArgsValue *pav)
+{
+    // 释放 type 里每个 String
+    for (int i = 0; i < pav->size; i++) {
+        if (pav->type[i] != NULL) {
+            string_free(pav->type[i]);
+        }
+    }
+
+    // 释放两个数组
+    free(pav->type);
+    free(pav->printfargs_value);
+
+    // 释放结构体
+    free(pav);
+}
+
+
+PrintfArgsValue *
+check_extend_PrintfArgsValue(XokMalloc *xokmalloc, PrintfArgsValue *pav)
+{
+    if (pav->value_count >= pav->size) {
+        pav = extend_PrintfArgsValue(xokmalloc, pav);
+    }
+    return pav;
 }

@@ -10,6 +10,9 @@
 #include <math.h>
 #include "../../cranegram/types.h"
 
+// = (int *) v;
+#define MAP_GET(type, var)  ((type*)((var)->value))
+
 typedef enum VAR_CLASS{
     INT,
     CHAR,
@@ -19,13 +22,13 @@ typedef enum VAR_CLASS{
 }VAR_CLASS;
 
 typedef struct VAR{
-    VAR_CLASS class;
+    String *var_type;
     void* value;
 }VAR;
 
 typedef struct Node{
     char* K;
-    TypeVar *V;
+    VAR *V;
     struct Node* next;
 }Node;
 
@@ -43,8 +46,8 @@ void free_hashmap(Hashmap* hashmap);
 
 int hashcode(char *K , Hashmap* map);
 
-void map_put(Hashmap *map, char *K,String *type , String *var_name);
+void map_put(Hashmap *map, char *K,String *type , void *v);
 
-TypeVar *map_get(Hashmap *map, char *K);
+VAR *map_get(Hashmap *map, char *K);
 
 #endif //XOKC_HASHMAP_H

@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #include <stdio.h>
 #include "../tool/String/String.h"
 #include "cgm_parse.h"
@@ -16,9 +19,17 @@ typedef struct PlaceHold{
 
 typedef struct PrintfVarArg{
     String **args;
+    String **args_type;
     int args_count;
     int size;
 }PrintfVarArg;
+
+typedef struct PrintfArgsValue{
+    void **printfargs_value;
+    int value_count;
+    int size;
+    String **type;
+}PrintfArgsValue;
 
 /* typevar.h struct!*/
 typedef struct TypeVar{
@@ -72,8 +83,17 @@ free_TypeVar(TypeVar *typeVar);
 AssignStack *
 create_AssignStack(XokMalloc *xokmalloc);
 
-
 AssignStack *
 extend_AssignStack(XokMalloc *xokmalloc, AssignStack *old);
 
+PrintfArgsValue *create_PrintfArgsValue(XokMalloc *xokmalloc);
 
+PrintfArgsValue *extend_PrintfArgsValue(XokMalloc *xokmalloc,
+                                        PrintfArgsValue *old);
+
+PrintfArgsValue *check_extend_PrintfArgsValue(XokMalloc *xokmalloc,
+                                              PrintfArgsValue *pav);
+
+void free_PrintfArgsValue(PrintfArgsValue *pav);
+
+#endif

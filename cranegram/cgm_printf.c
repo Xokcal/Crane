@@ -8,10 +8,25 @@
 
 #define CRA_PRINTF_MODULE(content , param) printf((content) , (param));
 #define CRA_PRINTF_MODULE_NO_PARAM(content) printf("%s" , (content));
-#define PRINTF_KEY_LEN(keys) sizeof(keys) / sizeof(keys[0])
+#define PRINTF_KEY_LEN(keys) sizeof((keys)) / sizeof((keys)[0])
 #define PRINTF_LN printf("\n")
 #define PRINTF_SINGLE_PLACEHOLD(placeHold , content) \
         printf((placeHold) , (content))
+
+static int
+is_argsvar_variable(String *str)
+{
+    LOG_I("len" , str->length);
+    for(int i = 0; i < str->length ; i++){
+        for(int j = 0; j < NUMBER_CHAR; j++){
+            LOG_CHR("p" , str->str[i]);
+            LOG_CHR("m" , number_char[j]);
+            if(j == NUMBER_CHAR - 1 && str->str[i] != number_char[NUMBER_CHAR - 1])return 1;
+            if(str->str[i] == number_char[j])break;
+        }
+    }
+    return 0;
+}
 
 static int
 contain_printf_PlaceHold(String *str)
@@ -35,6 +50,38 @@ printf_varArgs_string(TOKENSB *t ,int *i)
     }
 }
 
+static void
+argscollect_variable(PrintfVarArg *printfVarArg , String *token)
+{
+    judge_is_extend(printfVarArg);
+    String *args_type = create_string("variable");
+    copy_string(args_type , printfVarArg->args_type[printfVarArg->args_count]);
+    copy_string(token , printfVarArg->args[printfVarArg->args_count++]);
+    string_free(args_type);
+}
+
+static void
+argscollect_number(PrintfVarArg *printfVarArg , String *token)
+{
+    judge_is_extend(printfVarArg);
+    String *args_type = create_string("number");
+    copy_string(args_type , printfVarArg->args_type[printfVarArg->args_count]);
+    copy_string(token , printfVarArg->args[printfVarArg->args_count++]);
+    string_free(args_type);
+}
+
+static void
+argscollect_string(TOKENSB *t , PrintfVarArg *printfVarArg , String *str_type , int *i) 
+{
+    String *pva_strtype = printf_varArgs_string(t , i);
+    copy_string(pva_strtype , str_type);
+    judge_is_extend(printfVarArg);
+    String *args_type = create_string("string");
+    copy_string(args_type , printfVarArg->args_type[printfVarArg->args_count]);
+    copy_string(str_type , printfVarArg->args[printfVarArg->args_count++]);
+    delete_all(str_type),string_free(pva_strtype) , string_free(args_type);
+}
+
 static int
 printf_varArgs_collect(TOKENSB *t , PrintfVarArg *printfVarArg 
     , int curr , int *is_entre_varArgs)
@@ -46,14 +93,15 @@ printf_varArgs_collect(TOKENSB *t , PrintfVarArg *printfVarArg
         String *token = t->tokens[i];
         if(compare(token , ")"))return i;
         if(!compare(token , " ")&&!compare(token , ",")&&!compare(token , "\"")){
-            judge_is_extend(printfVarArg);
-            copy_string(token , printfVarArg->args[printfVarArg->args_count++]);
+            if(is_argsvar_variable(token)){ // judge is variable!
+                argscollect_variable(printfVarArg , token);
+                continue;
+            }
+            argscollect_number(printfVarArg , token);
             continue;
         }
         if(compare(token , "\"")){
-            copy_string(printf_varArgs_string(t , &i) , str_type);
-            copy_string(str_type , printfVarArg->args[printfVarArg->args_count++]);
-            delete_all(str_type);
+            argscollect_string(t , printfVarArg , str_type , &i);
             continue;
         }
     }
@@ -70,10 +118,12 @@ printf_format_content(TOKENSB *t , PlaceHold *placeHold
         if(contain_printf_PlaceHold(token)){ // is placeHold
             PlaceHold_is_outsize(placeHold);
             String *type = placeHold->type[placeHold->type_count++];
+            LOG_C("type" , token->str);
             copy_string(token , type);
         }
         PlaceHold_is_outsize(placeHold);
         String *origin = placeHold->origin[placeHold->origin_count++];
+        LOG_C("origin" , token->str);
         copy_string(token , origin);
     }
 }
@@ -127,6 +177,36 @@ printf_output(PlaceHold *placeHold ,PrintfVarArg *printfVarArg)
     }
 }
 
+static void
+auth_value_insert_printfargsValue(Hashmap *hashmap , PrintfVarArg *printfVarArg 
+    , void **printfargs_value , int *printfargs_value_count)
+{
+
+}
+
+static void
+args_convert_auth_value(XokMalloc *xokMalloc , Hashmap *hashmap 
+    , PrintfVarArg *printfVarArg ,  PrintfArgsValue *printfArgsValue)
+{
+    for(int o = 0 ; o < printfVarArg->args_count ; o++){
+        LOG_C("printf_args" , printfVarArg->args[o]->str);
+        LOG_C("args_type" , printfVarArg->args_type[o]->str);
+    }
+    int *map_int; 
+    char *map_chars;
+    for(int i = 0 ; i < printfVarArg->args_count ; i++){
+        if(compare(printfVarArg->args_type[i] , "variable")){
+            {
+                VAR *var = map_get(hashmap , printfVarArg->args[i]->str);
+                if(compare(var->var_type , "int")){map_int = MAP_GET(int , var);}
+            }
+            LOG_I(">>>>>>>" , *map_int);
+            printfArgsValue = check_extend_PrintfArgsValue(xokMalloc , printfArgsValue);
+            printfArgsValue->printfargs_value[printfArgsValue->value_count++] = map_int;
+        }
+    }
+}
+
 int
 CraPrintf_fule(XokMalloc *xokmalloc ,TOKENSB *t , Hashmap *hashmap , int curr)
 {
@@ -157,8 +237,9 @@ CraPrintf_fule(XokMalloc *xokmalloc ,TOKENSB *t , Hashmap *hashmap , int curr)
             continue;
         }
         if(is_entre_varArgs&&compare(token , ";")){
+            PrintfArgsValue *printfArgsValue = create_PrintfArgsValue(xokmalloc);
+            args_convert_auth_value(xokmalloc , hashmap , printfVarArg , printfArgsValue);
             printf_output(placeHold ,printfVarArg);
-            printf("");
             return i;
         }
     }

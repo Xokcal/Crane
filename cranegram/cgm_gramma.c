@@ -9,7 +9,7 @@
 #include "../tool/log/log.h"
 #include "../tool/map/hashmap_int.h"
 
-void print_var(Hashmap *HASHMAP_VOID , VAR *var , char *var_name){
+/*void print_var(Hashmap *HASHMAP_VOID , VAR *var , char *var_name){
     int value;
     switch (var->class) {
         case INT:
@@ -18,7 +18,7 @@ void print_var(Hashmap *HASHMAP_VOID , VAR *var , char *var_name){
             printf("%d\n", value);
             return;
     }
-}
+}*/
 
 int* str_convert_int(String *value_str){
     int v = 0;

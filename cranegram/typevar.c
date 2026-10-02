@@ -123,13 +123,12 @@ doublestackpush_lowpriority_condition(AssignStack *doubleStack , String *curr_ca
 }
 
 static void
-doublestackpush_processmain(AssignStack *assignStack , AssignStack *doubleStack 
+doublestackpush_process_main(AssignStack *assignStack , AssignStack *doubleStack 
     , int *c_i , int *previous_sign_priority , int *v_i , int *double_name_i)
 {
     while(*c_i <= assignStack->calc_sign_count){
         //when sign is "*" and after has calculated 
-        //the result position replace is equal function'copy_string(insertPosition , assignStack);'
-        //need't to insert new var to doubleStack,use goto 'previousPriority'.
+        //the result position replace is equal function'copy_string(insertPosition , assignStack);'.
         if((*previous_sign_priority) == 0){
             copy_string(assignStack->var_name[*v_i] ,doubleStack->var_name[doubleStack->var_name_count++]);
         }
@@ -144,13 +143,15 @@ doublestackpush_processmain(AssignStack *assignStack , AssignStack *doubleStack
     }
 }
 
-static String*
+static int*
 AssignStack_DoubleStack_calc(XokMalloc *xokmalloc ,AssignStack *assignStack)
 {
     int v_i = 0 , c_i = 0 , double_name_i , previous_sign_priority = 0;
     AssignStack *doubleStack = create_AssignStack(xokmalloc);
-    doublestackpush_processmain(assignStack , doubleStack , &c_i , &previous_sign_priority , &v_i , &double_name_i);
-    return doubleStack_lowPriority_calc(assignStack , doubleStack , c_i);
+    doublestackpush_process_main(assignStack , doubleStack , &c_i , &previous_sign_priority , &v_i , &double_name_i);
+    String *str_res = doubleStack_lowPriority_calc(assignStack , doubleStack , c_i);
+    string_free(str_res);
+    return str_convert_int(str_res);
 }
 
 static int
@@ -170,39 +171,37 @@ typeVar_AssignStack_collect(XokMalloc *xokmalloc , TOKENSB *t, int curr , Assign
 int
 CraTypeVar_Parse(XokMalloc *xokmalloc ,TOKENSB *t , Hashmap *hashmap , int curr)
 {
-    int is_over_type = 0;
-    int is_over_typeName = 0;
-    int is_over_equal = 0;
-    String *k = create_string("");
-    String *name = create_string("");
-    String *res;
-    AssignStack *assignStack = create_AssignStack(xokmalloc);
-    for(int i = curr ; i < t->count ; i++){
-        String *token = t->tokens[i];
-        if(!is_over_equal && compare(token , "=")){
-            is_over_equal = 1;
-            continue;
-        }
-        if(compare(token , ";")){
-            res = AssignStack_DoubleStack_calc(xokmalloc , assignStack);
-            LOG_C("result" , res->str);
-            map_put(hashmap , name->str , k , res);
-            string_free(res);
-            return i;
-        }
-        if(is_over_equal){
-            i = typeVar_AssignStack_collect(xokmalloc , t , i , assignStack);
-            continue;
-        }
-        if(!is_over_type&&isTypeVarToken(token)){
-            combine_tail(k , token->str);
-            is_over_type = 1;
-            continue;
-        }
-        if(is_over_type&&!compare(token , " ")){
-            combine_tail(name , token->str);
-            is_over_typeName = 1;
-            continue;
-        }
+  int is_over_type = 0;
+  int is_over_typeName = 0;
+  int is_over_equal = 0;
+  String *k = create_string("");
+  String *name = create_string("");
+  void *res;
+  AssignStack *assignStack = create_AssignStack(xokmalloc);
+  for(int i = curr ; i < t->count ; i++){
+    String *token = t->tokens[i];
+    if(!is_over_equal && compare(token , "=")){
+        is_over_equal = 1;
+        continue;
     }
+    if(compare(token , ";")){
+        res = AssignStack_DoubleStack_calc(xokmalloc , assignStack);
+        map_put(hashmap , name->str , k , res);
+        return i;
+    }
+    if(is_over_equal){
+        i = typeVar_AssignStack_collect(xokmalloc , t , i , assignStack);
+        continue;
+    }
+    if(!is_over_type&&isTypeVarToken(token)){
+        combine_tail(k , token->str);
+        is_over_type = 1;
+        continue;
+    }
+    if(is_over_type&&!compare(token , " ")){
+        combine_tail(name , token->str);
+        is_over_typeName = 1;
+        continue;
+    }
+  }
 }

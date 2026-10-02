@@ -5,7 +5,6 @@
 #include "hashmap_int.h"
 #include "../../cranegram/types.h"
 
-
 Hashmap *create_hashmap() {
     Hashmap *map = (Hashmap *) malloc(sizeof(Hashmap));
     map->len = 10;
@@ -24,12 +23,19 @@ void free_hashmap(Hashmap *hashmap) {
     free(hashmap);
 }
 
-Node *create_node(char *K, String *type , String *var_name) {
+static VAR*
+create_VAR(String *type , void *v){
+    VAR *var = (VAR *)malloc(sizeof(VAR));
+    var->var_type = create_string("");
+    copy_string(type , var->var_type);
+    var->value = v;
+    return var;
+}
+
+Node *create_node(char *K, String *type , void *v) {
     Node *node = (Node *) malloc(sizeof(Node));
     node->K = K;
-    node->V = create_TypeVar();
-    copy_string(var_name , node->V->var_name);
-    copy_string(type , node->V->type);
+    node->V = create_VAR(type , v);
     node->next = NULL;
     return node;
 }
@@ -43,8 +49,10 @@ int hashcode(char *K, Hashmap *map) {
     return r;
 }
 
-void map_put(Hashmap *map, char *K,String *type , String *var_name) {
-    Node *new_node = create_node(K, type , var_name);
+void map_put(Hashmap *map, char *K,String *type , void *v) {
+    LOG("entre put");
+    Node *new_node = create_node(K, type , v);
+    LOG("en put main");
     int hash_index = hashcode(K, map);
     Node *h = map->arr[hash_index];
     if (h == NULL) {
@@ -65,13 +73,13 @@ void map_put(Hashmap *map, char *K,String *type , String *var_name) {
     h->next = new_node;
 }
 
-TypeVar *map_get(Hashmap *map, char *K) {
+VAR *map_get(Hashmap *map, char *K) {
     int hash_index = hashcode(K, map);
     Node *h = map->arr[hash_index];
     if (h == NULL){
-        TypeVar *null = (TypeVar*)malloc(sizeof(TypeVar));
-        null->type = NULL;
-        null->var_name = NULL;
+        VAR *null = (VAR*)malloc(sizeof(VAR));
+        null->value = NULL;
+        null->var_type = NULL;
         return null;
     }
     while (h != NULL) {
@@ -80,9 +88,9 @@ TypeVar *map_get(Hashmap *map, char *K) {
         }
         h = h->next;
     }
-    TypeVar *null = (TypeVar*)malloc(sizeof(TypeVar));
-    null->type = NULL;
-    null->var_name = NULL;
+    VAR *null = (VAR*)malloc(sizeof(VAR));
+    null->value = NULL;
+    null->var_type = NULL;
     return null;
 }
 

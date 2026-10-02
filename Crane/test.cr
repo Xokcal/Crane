@@ -1,4 +1,3 @@
-printf("%s\n" , "hello Crane!!");
-printf("Hajimi \n");
+int count  = 10;
 
-int a = 12 / 0;
+printf("%d %s \n" , count , "Man");
