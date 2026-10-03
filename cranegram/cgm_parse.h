@@ -11,7 +11,7 @@
 #include "../tool/String/String.h"
 #include "../tool/xokmalloc/xokmalloc.h"
 
-  #define CRA_DEBUG
+#define CRA_DEBUG
 
 #ifdef CRA_DEBUG
     #define LOG(content) printf("[DEBUG] %s\n" , (content))

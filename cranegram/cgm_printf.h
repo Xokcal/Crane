@@ -5,8 +5,9 @@
 #include "../tool/xokmalloc/xokmalloc.h"
 
 #define NUMBER_CHAR 10
+#define PRINTF_PLACEHOLDS_LEN 3
 
-static char *printf_PlaceHolds[] = {
+static char *printf_PlaceHolds[PRINTF_PLACEHOLDS_LEN] = {
     "%d" , "%f" , "%s"
 };
 

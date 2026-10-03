@@ -17,6 +17,7 @@ typedef enum VAR_CLASS{
     INT,
     CHAR,
     STRING,
+    LONG,
     FLOAT,
     DOUBLE
 }VAR_CLASS;
