@@ -5,6 +5,7 @@
 #include "cranegram/cgm_parse.h"
 #include "cranegram/cgm_gramma.h"
 #include "tool/xokmalloc/xokmalloc.h"
+#include "cranegram/craparse.h"
 
 #define ATM_MULTIPY_STRI(a , d) (a + b)
 #define PI 3.14
@@ -14,9 +15,13 @@ static float ATM_FRONT_STRING_TRIANGE = 34.234;
 int main() {
     String *origin_str = open_file("Crane/test.cr");
     TOKENSB *tokens = tokens_parse(origin_str);
+    for(int i = 0; i < tokens->count ; i++){
+        printf("%s" , tokens->tokens[i]->str);
+    }printf("\n");
     XokMalloc *xokMalloc =  create_XokMalloc();
     Hashmap *hashmap = create_hashmap();
-    __CRVM_RUN__(xokMalloc , tokens , tokens->count , hashmap);
+    //__CRVM_RUN__(xokMalloc , tokens , tokens->count , hashmap);
+    Cra_token_parse(xokMalloc , tokens);
     free_XokMalloc(xokMalloc);
     return 0;
 }

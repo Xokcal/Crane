@@ -1,3 +1,2 @@
-int count  = 10 + 34 * 91 - 78 * 2 / 8;
+int salary = 91 * 78 + 9 + 69 + 96 / 2;
 
-printf("count:%d\n name:%s\n age:%d\n" , count , "Man" , 14);

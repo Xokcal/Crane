@@ -13,6 +13,7 @@
 #include "../tool/map/hashmap_int.h"
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "typevar.h"
+#include <string.h>
 
 int isContainKeys(String *string){
     for (int i = 0; i < 29; ++i) {
@@ -22,14 +23,52 @@ int isContainKeys(String *string){
     return 0;
 }
 
+static int
+isPlaceHoldKeys(String *str){
+    for(int i = 0; i < PLACEHOLD_KEYS_LEN ; i++){
+        if(compare(str , placeHoldKeys[i])){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int
+isExtreCheckChar(char t){
+    for(int i = 0; i < EXTRE_CHECK_CHAR_LEN ; i++){
+        if(t == extreCheckChar[i]){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// gcc.exe cranegram/typevar.c cranegram/types.c cranegram/cgm_file.c cranegram/cgm_gramma.c cranegram/cgm_parse.c cranegram/cgm_printf.c tool/file/file.c tool/log/log.c tool/map/hashmap_int.c tool/String/String.c tool/xokmalloc/xokmalloc.c main.c -o main.exe
+
+
 TOKENSB *tokens_parse(String *origin){
     String **tokens = (String**)malloc(2000000 * sizeof(String*));
     String *temp = create_string("");
     String *temp_test = create_string("");
     String *temp_longest_match = create_string("");
+    String *extre_check_key = create_string("");
     int count = 0;
     for (int i = 0; i < origin->length; ++i) {
         //LOG_CHR("---i---" , origin->str[i]);
+        if(isExtreCheckChar(origin->str[i])){
+            combine_tail_char(extre_check_key , origin->str[i]);
+            combine_tail_char(extre_check_key , origin->str[i + 1]);
+            if(isPlaceHoldKeys(extre_check_key)){
+                tokens[count] = create_string("");
+                combine_tail(tokens[count++] , temp->str);
+                delete_all(temp);
+                tokens[count] = create_string("");
+                combine_tail(tokens[count++] , extre_check_key->str);
+                delete_all(extre_check_key);
+                i += 1;
+                continue;
+            }
+        }
         combine_tail_char(temp , origin->str[i]);
         if(isContainKeys(temp) == 1){
             int longest_count = 1;

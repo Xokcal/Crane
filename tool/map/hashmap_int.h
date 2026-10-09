@@ -12,6 +12,7 @@
 
 // = (int *) v;
 #define MAP_GET(type, var)  ((type*)((var)->value))
+#define MAP_INIT_LEN 10000
 
 typedef enum VAR_CLASS{
     INT,

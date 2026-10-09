@@ -7,7 +7,7 @@
 
 Hashmap *create_hashmap() {
     Hashmap *map = (Hashmap *) malloc(sizeof(Hashmap));
-    map->len = 10;
+    map->len = MAP_INIT_LEN;
     map->factor = 0.8;
     map->arr = (Node **) malloc(map->len * sizeof(Node *));
     for (int i = 0; i < map->len; ++i)
@@ -50,9 +50,7 @@ int hashcode(char *K, Hashmap *map) {
 }
 
 void map_put(Hashmap *map, char *K,String *type , void *v) {
-    LOG("entre put");
     Node *new_node = create_node(K, type , v);
-    LOG("en put main");
     int hash_index = hashcode(K, map);
     Node *h = map->arr[hash_index];
     if (h == NULL) {

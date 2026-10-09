@@ -23,11 +23,8 @@
 static int
 is_argsvar_variable(String *str)
 {
-    LOG_I("len" , str->length);
     for(int i = 0; i < str->length ; i++){
         for(int j = 0; j < NUMBER_CHAR; j++){
-            LOG_CHR("p" , str->str[i]);
-            LOG_CHR("m" , number_char[j]);
             if(j == NUMBER_CHAR - 1 && str->str[i] != number_char[NUMBER_CHAR - 1])return 1;
             if(str->str[i] == number_char[j])break;
         }
@@ -120,6 +117,7 @@ printf_varArgs_collect(TOKENSB *t , PrintfVarArg *printfVarArg
             continue;
         }
     }
+    string_free(str_type);
 }
 
 static int
@@ -133,12 +131,10 @@ printf_format_content(TOKENSB *t , PlaceHold *placeHold
         if(contain_printf_PlaceHold(token)){ // is placeHold
             PlaceHold_is_outsize(placeHold);
             String *type = placeHold->type[placeHold->type_count++];
-            LOG_C("type" , token->str);
             copy_string(token , type);
         }
         PlaceHold_is_outsize(placeHold);
         String *origin = placeHold->origin[placeHold->origin_count++];
-        LOG_C("origin" , token->str);
         copy_string(token , origin);
     }
 }
@@ -189,23 +185,30 @@ printf_output_placeHold(PlaceHold *placeHold ,PrintfVarArg *printfVarArg
 }
 
 static void
-printf_output(PlaceHold *placeHold ,PrintfVarArg *printfVarArg , PrintfArgsValue *printfArgsValue)
+printf_output_exists_placehold(PlaceHold *placeHold , PrintfVarArg *printfVarArg 
+    , PrintfArgsValue *printfArgsValue , int *args_index)
 {
-    placeHold_type_match_index(placeHold);
-    int args_index = 0;
-    if(printfVarArg->args_count == 0){
-    printf_output_varArgs_empty(placeHold);return;
-    }
     for(int i = 0 ; i < placeHold->origin_count; i++){
         if(compare(placeHold->origin[i] , "\\n")){
             PRINTF_LN;continue;
         }
         if(is_reach_format_type(placeHold , i)){
-            printf_output_placeHold(placeHold , printfVarArg , printfArgsValue , i , &args_index);
+            printf_output_placeHold(placeHold , printfVarArg , printfArgsValue , i , args_index);
             continue;
         }
         PRINTF_SINGLE_PLACEHOLD("%s" , placeHold->origin[i]->str);
     }
+}
+
+static void
+printf_output(PlaceHold *placeHold ,PrintfVarArg *printfVarArg , PrintfArgsValue *printfArgsValue)
+{
+    placeHold_type_match_index(placeHold);
+    int args_index = 0;
+    if(printfVarArg->args_count == 0){
+        printf_output_varArgs_empty(placeHold);return;
+    }
+    printf_output_exists_placehold(placeHold , printfVarArg , printfArgsValue , &args_index);
 }
 
 static void
@@ -219,7 +222,6 @@ printfArgsValue_convert_value_variable(XokMalloc *xokMalloc , Hashmap *hashmap ,
                 printfArgsValue = check_extend_PrintfArgsValue(xokMalloc , printfArgsValue);
                 printfArgsValue->printfargs_value[printfArgsValue->value_count++] = MAP_GET(int , var);
                 int *var_1 = (int *)printfArgsValue->printfargs_value[printfArgsValue->value_count - 1];
-                LOG_I("var_1" , *var_1);
             break;
             default:break;
         }
@@ -234,7 +236,6 @@ printfArgsValue_convert_value_number(XokMalloc *xokMalloc , PrintfArgsValue *pri
         printfArgsValue = check_extend_PrintfArgsValue(xokMalloc , printfArgsValue);
         printfArgsValue->printfargs_value[printfArgsValue->value_count++] = str_convert_int(args[i]);
         int *num = (int *)printfArgsValue->printfargs_value[printfArgsValue->value_count - 1];
-        LOG_I("num" , *num);
     }
 }
 
@@ -246,7 +247,6 @@ printfArgsValue_convert_value_string(XokMalloc *xokMalloc , PrintfArgsValue *pri
         printfArgsValue = check_extend_PrintfArgsValue(xokMalloc , printfArgsValue);
         printfArgsValue->printfargs_value[printfArgsValue->value_count++] = args[i];
         String *str = (String *)printfArgsValue->printfargs_value[printfArgsValue->value_count - 1];
-        LOG_C("str" , str->str);
     }
 }
 

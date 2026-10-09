@@ -20,12 +20,23 @@
     #define LOG_I(front , content) printf("[DEBUG] [%s] %d\n" , (front) , (content))
 #endif
 
+#define EXTRE_CHECK_CHAR_LEN 2
+#define PLACEHOLD_KEYS_LEN 4
+
 typedef struct Hashmap Hashmap;
 
 
 static char *keys[] = {"printf" , "\"" , "\n" , "(" , ")" , ";" , "<" , ">" , "=" , "==" , "\'"
                       , "fun" , "@" , "$" , "%" , "&" , "+" , "-" , "^" , "/" , "*" , "." , " "
                       , "int" , "float" , "string" , "%d" , "%f" , "%s"};
+
+static char extreCheckChar[EXTRE_CHECK_CHAR_LEN] = {
+    '\\' , '%'
+};
+
+static char *placeHoldKeys[PLACEHOLD_KEYS_LEN] = {
+    "%s" , "%d" , "%f" , "\\n"
+};
 
 typedef enum key_enum{
     PRINT_K,
