@@ -1,2 +1,2 @@
-int salary = 91 * 78 + 9 + 69 + 96 / 2;
+int salary = 1 + 9 * 2 * 3;
 
