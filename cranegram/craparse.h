@@ -38,6 +38,12 @@ typedef struct craastdesc{
   } as;
 }craastdesc;
 
+typedef struct desclist{
+  craastdesc **desclist;
+  int size;
+  int count;
+}desclist;
+
 typedef struct ParseFactor{
   TOKENSB *tokens;
   int curr;
@@ -55,6 +61,14 @@ typedef struct pavstate{
   craastdesc *root;
 }pavstate;
 
-void Cra_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens);
+/* crane ast parse main funtion, xokMalloc is memory pool */
+void Cra_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens , desclist *dl);
 
+desclist *Cra_desclist_create(XokMalloc *xm, int init_size);
+
+void Cra_desclist_free(XokMalloc *xm, desclist *dl);
+
+int Cra_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree);
+
+int Cra_desclist_expand(XokMalloc *xm, desclist *dl);
 #endif

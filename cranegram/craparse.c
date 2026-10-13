@@ -3,6 +3,9 @@
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "cgm_parse.h"
 #include "cgm_gramma.h"
+#include "../tool/String/String.h"
+#include "../tool/log/log.h"
+#include "cgm_file.h"
 
 #define craP_ps_currtoken(ps) (ps).pf->tokens->tokens[(ps).pf->curr]
 
@@ -134,6 +137,67 @@ craastdesc *make_assign(XokMalloc *xokMalloc , char *name , craastdesc *value)
 }
 
 
+/*
+****************** desclist cycle funtion**********************
+*/
+
+
+#define DESCLIST_DEFAULT_SIZE 16
+#define DESCLIST_GROW_FACTOR  2
+
+desclist *
+Cra_desclist_create(XokMalloc *xm, int init_size)
+{
+  if (init_size <= 0) init_size = DESCLIST_DEFAULT_SIZE;
+  desclist *dl = (desclist *)xalloc_XokMalloc(xm, sizeof(desclist));
+  if (!dl) return NULL;
+  dl->desclist = (craastdesc **)xalloc_XokMalloc(
+      xm, sizeof(craastdesc *) * init_size);
+  if (!dl->desclist)return NULL;
+  dl->size  = init_size;
+  dl->count = 0;
+  return dl;
+}
+
+/* 释放：释放数组 + 释放结构体 */
+void
+Cra_desclist_free(XokMalloc *xm, desclist *dl)
+{
+  if (!dl) return;if (dl->desclist)dl->desclist = NULL;
+}
+
+
+int
+Cra_desclist_expand(XokMalloc *xm, desclist *dl)
+{
+  if (!dl) return 0;
+  int new_size = dl->size * DESCLIST_GROW_FACTOR;
+  craastdesc **new_arr = (craastdesc **)xalloc_XokMalloc(
+      xm, sizeof(craastdesc *) * new_size);
+  if (!new_arr) return 0;
+  memcpy(new_arr, dl->desclist, sizeof(craastdesc *) * dl->count);
+  dl->desclist = new_arr;
+  dl->size     = new_size;
+  return 1;
+}
+
+int
+Cra_desclist_push(XokMalloc *xm, desclist *dl, craastdesc *tree)
+{
+  if (!dl) return 0;
+  if (dl->count >= dl->size) {
+    if (!Cra_desclist_expand(xm, dl))return 0;
+  }
+  dl->desclist[dl->count++] = tree;
+  return 1;
+}
+
+
+/*
+******************************************************************
+*                      AST gramma parse                          *
+******************************************************************
+*/
 static craastdesc*
 push_var_undefine(XokMalloc *xm , String *name)
 {return make_assign(xm , name->str , NULL);}
@@ -225,17 +289,18 @@ int_desc(XokMalloc *xm , ParseFactor *pf)
 
 
 void
-Cra_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens)
+Cra_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
 {
-  ParseFactor pf = {tokens , 0};
-  while(pf.curr < tokens->count)
+  ParseFactor pf = {ts , 0};
+  while(pf.curr < ts->count)
   {
-   String *t = tokens->tokens[pf.curr];
+   String *t = pf.tokens->tokens[pf.curr++];
    switch(t_convert_asttype(t))
    {
     case GRAM_INT:{
      LOG_C("GRAM_INT" , "entre!!");
-     int_desc(xokMalloc , &pf);
+     craastdesc *vd = int_desc(xm , &pf);
+     Cra_desclist_push(xm , dl , vd);
      break;
     }
     case GRAM_PRINTF:{
@@ -247,4 +312,23 @@ Cra_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens)
   }
    break;
   }
+}
+
+int main() {
+    String *origin_str = open_file("Crane/test.cr");
+    TOKENSB *tokens = tokens_parse(origin_str);
+
+    for(int i = 0; i < tokens->count ; i++){
+        printf("%s" , tokens->tokens[i]->str);
+    }printf("\n");
+
+    XokMalloc *xm =  create_XokMalloc();
+    Hashmap *hmap = create_hashmap();
+    desclist *dl = Cra_desclist_create(xm , 16);
+    //__CRVM_RUN__(xokMalloc , tokens , tokens->count , hashmap);
+    Cra_token_parse(xm , tokens , dl);
+    // free setting struct
+    Cra_desclist_free(xm , dl);
+    free_XokMalloc(xm);
+    return 0;
 }
