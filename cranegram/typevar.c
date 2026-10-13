@@ -29,7 +29,6 @@ is_calc_sign(String *token)
     }
     return 0;
 }
-
 static String* 
 int_to_String(int p){
     char buf[20];

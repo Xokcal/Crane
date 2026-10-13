@@ -34,7 +34,7 @@ typedef struct craastdesc{
     struct assign{
       char *name;     /* assign about of variable name */
       struct craastdesc *value;   /* assign value */
-  } assign;
+    } assign;
   } as;
 }craastdesc;
 
@@ -59,7 +59,6 @@ typedef struct pavstate{
   String *num_p2;
   String *calcsign;
   String *calcsign2;
-  int *return_index;
 }pavstate;
 
 void Cra_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens);
