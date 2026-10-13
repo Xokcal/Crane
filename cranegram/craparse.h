@@ -9,7 +9,8 @@ typedef enum cragramtype{
   GRAM_INT,
   GRAM_STRING,
   GRAM_FLOAT,
-  GRAM_PRINTF
+  GRAM_PRINTF,
+  GRAM_EMPTY
 }cragramtype;
 
 typedef enum craasttype{

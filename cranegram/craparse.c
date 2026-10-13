@@ -15,6 +15,9 @@ static int
 t_convert_asttype(String *s)
 {
   if(compare(s , "int"))return GRAM_INT;
+  if(compare(s , " "))return GRAM_EMPTY;
+  if(compare(s , "\n"))return GRAM_EMPTY;
+  if(compare(s , ";"))return GRAM_EMPTY;
 }
 
 
@@ -295,13 +298,11 @@ Cra_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
   while(pf.curr < ts->count)
   {
    String *t = pf.tokens->tokens[pf.curr++];
+   printf("(t):%s\n" , t->str);
    switch(t_convert_asttype(t))
     {
-     case GRAM_INT:{
-      LOG_C("GRAM_INT" , "entre!!");
-      craastdesc *vd = int_desc(xm , &pf);
-      print_ast(vd , 0);
-      Cra_desclist_push(xm , dl , vd);
+     case GRAM_EMPTY:{
+      pf.curr++;
       break;
      }
      case GRAM_PRINTF:{
@@ -309,9 +310,13 @@ Cra_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
       //prinft_desc();
       break;
      }
-     default:{continue;}
+     case GRAM_INT:{
+      craastdesc *vd = int_desc(xm , &pf);
+      print_ast(vd , 0);
+      Cra_desclist_push(xm , dl , vd);
+      break;
+     }
    }
-   LOG_I("----------------------------pf_count" , pf.curr);
   }
 }
 
@@ -322,10 +327,10 @@ int main()
     for(int i = 0; i < tokens->count ; i++){
         printf("%s" , tokens->tokens[i]->str);
     }printf("\n");
-    XokMalloc *xm =  create_XokMalloc();  /* gloab memory pool */
-    Hashmap *hmap = create_hashmap();   /* gloab variable hash map */
-    desclist *dl = Cra_desclist_create(xm , 16);  /* overall desc tree list */
-    Cra_token_parse(xm , tokens , dl);  /* tokens parse to AST desc list */
+    XokMalloc *xm = create_XokMalloc();
+    Hashmap *hmap = create_hashmap(); /* gloab variable*/
+    desclist *dl = Cra_desclist_create(xm , 16); /* tree list */
+    Cra_token_parse(xm , tokens , dl);  /*  AST main parse */
     // free setting struct
     Cra_desclist_free(xm , dl);
     free_XokMalloc(xm);
