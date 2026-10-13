@@ -51,16 +51,10 @@ pav_clear_string(String *num_p1 , String *num_p2
 static pavstate
 pavstate_init(XokMalloc *xm,ParseFactor *pf)
 {
-  pavstate          pavs;
-  pavs.xm           = xm;
-  pavs.pf           = pf;
-  pavs.root         = NULL;
-  pavs.curr_node    = NULL;
-  pavs.temp_node    = NULL;
-  pavs.num_p1       = create_string("");
-  pavs.num_p2       = create_string("");
-  pavs.calcsign     = create_string("");
-  pavs.calcsign2    = create_string("");
+  pavstate pavs;
+  pavs.xm = xm;
+  pavs.pf = pf;
+  pavs.root = NULL;
   return pavs;
 }
 
@@ -140,10 +134,9 @@ craastdesc *make_assign(XokMalloc *xokMalloc , char *name , craastdesc *value)
 }
 
 
-/*  */
 static craastdesc*
 push_var_undefine(XokMalloc *xm , String *name)
-{return make_assign(xm , name , NULL);}
+{return make_assign(xm , name->str , NULL);}
 
 
 static craastdesc*
@@ -183,7 +176,7 @@ parse_mid(pavstate ps)
 
 
 static craastdesc*
-parse_assign_main(pavstate ps)
+parse_value_main(pavstate ps)
 {
   accept_empty(ps.pf);
   ps.root = parse_mid(ps); /* tackle low priority or 
@@ -204,17 +197,6 @@ parse_assign_main(pavstate ps)
   has collected all tackled node tree */
 }
 
-
-static craastdesc*
-parse_assign_value(XokMalloc *xm , ParseFactor *pf)
-{
-  /* package init params to pavstate */
-  pavstate ps = pavstate_init(xm , pf);
-  ps.root = parse_assign_main(ps);
-  print_ast(ps.root , 0);
-  return ps.root;
-}
-
 /* 
 ** Crane 'int' grammar fule , parse to craastdesc tree.
 ** return single tree ,collect to tree arrays;
@@ -233,7 +215,9 @@ int_desc(XokMalloc *xm , ParseFactor *pf)
     craastdesc *undefinevar = push_var_undefine(xm , name);  /* undefine variable tackle */
     return undefinevar;
   }
-  craastdesc *v = parse_assign_value(xm , pf); /* tackle after '=' value tree */
+  pavstate ps = pavstate_init(xm , pf);
+  craastdesc *v = parse_value_main(ps); /* tackle after '=' value tree */
+  print_ast(v , 0);
   craastdesc *desc = make_assign(xm , name->str , v); /* current 'desc' struction is:
   struct assign* = {var_name , struct binop* root} */
   return desc;

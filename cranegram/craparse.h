@@ -53,12 +53,6 @@ typedef struct pavstate{
   XokMalloc *xm;
   ParseFactor *pf;
   craastdesc *root;
-  craastdesc *curr_node;
-  craastdesc *temp_node;
-  String *num_p1;
-  String *num_p2;
-  String *calcsign;
-  String *calcsign2;
 }pavstate;
 
 void Cra_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens);
