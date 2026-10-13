@@ -281,7 +281,7 @@ int_desc(XokMalloc *xm , ParseFactor *pf)
   }
   pavstate ps = pavstate_init(xm , pf);
   craastdesc *v = parse_value_main(ps); /* tackle after '=' value tree */
-  print_ast(v , 0);
+  //print_ast(v , 0);
   craastdesc *desc = make_assign(xm , name->str , v); /* current 'desc' struction is:
   struct assign* = {var_name , struct binop* root} */
   return desc;
@@ -296,37 +296,36 @@ Cra_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
   {
    String *t = pf.tokens->tokens[pf.curr++];
    switch(t_convert_asttype(t))
-   {
-    case GRAM_INT:{
-     LOG_C("GRAM_INT" , "entre!!");
-     craastdesc *vd = int_desc(xm , &pf);
-     Cra_desclist_push(xm , dl , vd);
-     break;
-    }
-    case GRAM_PRINTF:{
-     LOG_C("GRAM_PRINTF" , "entre!!");
-     //prinft_desc();
-     break;
-    }
-    default:{break;}
-  }
-   break;
+    {
+     case GRAM_INT:{
+      LOG_C("GRAM_INT" , "entre!!");
+      craastdesc *vd = int_desc(xm , &pf);
+      print_ast(vd , 0);
+      Cra_desclist_push(xm , dl , vd);
+      break;
+     }
+     case GRAM_PRINTF:{
+      LOG_C("GRAM_PRINTF" , "entre!!");
+      //prinft_desc();
+      break;
+     }
+     default:{continue;}
+   }
+   LOG_I("----------------------------pf_count" , pf.curr);
   }
 }
 
-int main() {
+int main()
+{
     String *origin_str = open_file("Crane/test.cr");
     TOKENSB *tokens = tokens_parse(origin_str);
-
     for(int i = 0; i < tokens->count ; i++){
         printf("%s" , tokens->tokens[i]->str);
     }printf("\n");
-
-    XokMalloc *xm =  create_XokMalloc();
-    Hashmap *hmap = create_hashmap();
-    desclist *dl = Cra_desclist_create(xm , 16);
-    //__CRVM_RUN__(xokMalloc , tokens , tokens->count , hashmap);
-    Cra_token_parse(xm , tokens , dl);
+    XokMalloc *xm =  create_XokMalloc();  /* gloab memory pool */
+    Hashmap *hmap = create_hashmap();   /* gloab variable hash map */
+    desclist *dl = Cra_desclist_create(xm , 16);  /* overall desc tree list */
+    Cra_token_parse(xm , tokens , dl);  /* tokens parse to AST desc list */
     // free setting struct
     Cra_desclist_free(xm , dl);
     free_XokMalloc(xm);
