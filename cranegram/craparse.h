@@ -19,7 +19,8 @@ typedef enum craasttype{
   /* child node */
   AST_NUM,
   AST_ASSIGN,
-  AST_BINOP
+  AST_BINOP,
+  AST_EMPTY
 }craasttype;
 
 typedef struct craastdesc{
@@ -63,7 +64,7 @@ typedef struct pavstate{
 }pavstate;
 
 /* crane ast parse main funtion, xokMalloc is memory pool */
-void Cra_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens , desclist *dl);
+void craP_token_parse(XokMalloc *xokMalloc , TOKENSB *tokens , desclist *dl);
 
 desclist *Cra_desclist_create(XokMalloc *xm, int init_size);
 

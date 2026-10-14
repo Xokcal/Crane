@@ -2,33 +2,14 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "build",
             "type": "shell",
-            "label": "C/C++: gcc.exe build active file",
-            "command": "C:\\Mingw-w64\\mingw64\\bin\\gcc.exe",
-            "args": [
-                "-fdiagnostics-color=always",
-                "-g",
-                "${workspaceFolder}/main.c",
-                "${workspaceFolder}/cranegram/craparse.c",
-                "${workspaceFolder}/cranegram/typevar.c",
-                "${workspaceFolder}/cranegram/types.c",
-                "${workspaceFolder}/cranegram/cgm_file.c",
-                "${workspaceFolder}/cranegram/cgm_gramma.c",
-                "${workspaceFolder}/cranegram/cgm_parse.c",
-                "${workspaceFolder}/cranegram/cgm_printf.c",
-                "${workspaceFolder}/tool/file/file.c",
-                "${workspaceFolder}/tool/log/log.c",
-                "${workspaceFolder}/tool/map/hashmap_int.c",
-                "${workspaceFolder}/tool/String/String.c",
-                "${workspaceFolder}/tool/xokmalloc/xokmalloc.c",
-                "-o",
-                "${workspaceFolder}/output/main.exe"
-            ],
-            "problemMatcher": ["$gcc"],
+            "command": "mingw32-make",
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": ["$gcc"]
         }
     ]
 }

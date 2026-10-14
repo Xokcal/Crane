@@ -6,6 +6,7 @@
 #include "../tool/String/String.h"
 #include "../tool/log/log.h"
 #include "cgm_file.h"
+#include "cracode.h"
 
 #define craP_ps_currtoken(ps) (ps).pf->tokens->tokens[(ps).pf->curr]
 
@@ -237,7 +238,7 @@ parse_mid(pavstate ps)
     cur = craP_ps_currtoken(ps); /* refresh current calcsign */
   }
   return l; /* external funtion need r node,
-  l is has tackled all high priority node tree,
+  l is has tackled all continuous high priority node tree,
   and/or first entre the funtion's low priority node(tree) */
 }
 
@@ -292,7 +293,7 @@ int_desc(XokMalloc *xm , ParseFactor *pf)
 
 
 void
-Cra_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
+craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
 {
   ParseFactor pf = {ts , 0};
   while(pf.curr < ts->count)
@@ -330,7 +331,8 @@ int main()
     XokMalloc *xm = create_XokMalloc();
     Hashmap *hmap = create_hashmap(); /* gloab variable*/
     desclist *dl = Cra_desclist_create(xm , 16); /* tree list */
-    Cra_token_parse(xm , tokens , dl);  /*  AST main parse */
+    craP_token_parse(xm , tokens , dl);  /*  AST main parse */
+    craC_bytecode_parse(xm , dl);
     // free setting struct
     Cra_desclist_free(xm , dl);
     free_XokMalloc(xm);
