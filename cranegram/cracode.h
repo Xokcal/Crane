@@ -28,7 +28,7 @@ typedef struct varnamestk {
     int count;
 } varnamestk;
 
-void
+vm*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl);
 
 #endif

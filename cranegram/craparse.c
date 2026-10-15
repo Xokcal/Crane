@@ -7,6 +7,7 @@
 #include "../tool/log/log.h"
 #include "cgm_file.h"
 #include "cracode.h"
+#include "cravm.h"
 
 #define craP_ps_currtoken(ps) (ps).pf->tokens->tokens[(ps).pf->curr]
 
@@ -331,7 +332,8 @@ int main()
     Hashmap *hmap = create_hashmap(); /* gloab variable*/
     desclist *dl = Cra_desclist_create(xm , 16); /* tree list */
     craP_token_parse(xm , tokens , dl);  /*  AST main parse */
-    craC_bytecode_parse(xm , dl);
+    vm *vm = craC_bytecode_parse(xm , dl);
+    vm_run(vm);
     // free setting struct
     Cra_desclist_free(xm , dl);
     free_XokMalloc(xm);

@@ -4,6 +4,7 @@
 #include "../tool/xokmalloc/xokmalloc.h"
 #include "craparse.h"
 #include "cgm_parse.h"
+#include "cravm.h"
 
 #define BYTECODE_DEFAULT_SIZE 16
 #define BYTECODE_GROW_FACTOR  2
@@ -160,7 +161,7 @@ assign_code(XokMalloc *xm , craastdesc *desc , bytecode *bc)
 }
 
 
-void
+vm*
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
 {
   int dl_c = 0;
@@ -187,4 +188,5 @@ craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
   }
   emit(xm , bc , OP_HALT);
   craC_codes_log(bc);
+  return vm_create(xm , bc , vns , 16);
 }

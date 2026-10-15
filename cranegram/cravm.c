@@ -13,10 +13,10 @@ vm_create(XokMalloc *xm, bytecode *bc, varnamestk *vns, int stack_size)
  if (!v) return NULL;
  v->stack = (int *)xalloc_XokMalloc(xm, sizeof(int) * stack_size);
  if (!v->stack) return NULL;
- v->bc         = bc;
- v->vns        = vns;
- v->sp         = 0;
- v->pc         = 0;
+ v->bc = bc;
+ v->vns = vns;
+ v->sp = 0;
+ v->pc = 0;
  v->stack_size = stack_size;
  return v;
 }
