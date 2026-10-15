@@ -11,7 +11,8 @@ typedef enum opcode{
   OP_SUB,
   OP_DIV,
   OP_MUL,
-  OP_HALT
+  OP_HALT,
+  OP_STORE
 }opcode;
 
 typedef struct bytecode{
@@ -19,6 +20,13 @@ typedef struct bytecode{
   int count;
   int size;
 }bytecode;
+
+typedef struct varnamestk {
+    char **vn; 
+    int *slots;
+    int size;
+    int count;
+} varnamestk;
 
 void
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl);

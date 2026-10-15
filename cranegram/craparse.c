@@ -307,7 +307,6 @@ craP_token_parse(XokMalloc *xm , TOKENSB *ts , desclist *dl)
       break;
      }
      case GRAM_PRINTF:{
-      LOG_C("GRAM_PRINTF" , "entre!!");
       //prinft_desc();
       break;
      }

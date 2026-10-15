@@ -3,6 +3,7 @@ CFLAGS  = -Wall -g
 TARGET  = main.exe
 
 SRCS = cranegram/cracode.c \
+       cranegram/cravm.c \
        cranegram/craparse.c \
        cranegram/typevar.c \
        cranegram/types.c \

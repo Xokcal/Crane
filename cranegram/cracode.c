@@ -27,6 +27,8 @@ bc_create(XokMalloc *xm, int init_size)
 static void
 bc_free(XokMalloc *xm, bytecode *bc)
 {
+  /* bc use xokmalloc memory pool, 
+  don't need to free(), equal 'NULL' is ok */
   if (!bc) return;
   if (bc->codes) bc->codes = NULL;
 }
@@ -55,6 +57,65 @@ emit(XokMalloc *xm, bytecode *bc, int instr)
   }
   bc->codes[bc->count++] = instr;
   return 1;
+}
+
+
+static varnamestk *
+vnstk_create(XokMalloc *xm, int init_size)
+{
+  if (init_size <= 0) init_size = 16;
+  varnamestk *vs = (varnamestk *)xalloc_XokMalloc(xm, sizeof(varnamestk));
+  if (!vs) return NULL;
+  vs->vn    = (char **)xalloc_XokMalloc(xm, sizeof(char *) * init_size);
+  vs->slots = (int *)xalloc_XokMalloc(xm, sizeof(int) * init_size);
+  if (!vs->vn || !vs->slots) return NULL;
+  vs->size  = init_size;
+  vs->count = 0;
+  return vs;
+}
+
+static void
+vnstk_free(XokMalloc *xm, varnamestk *vs)
+{
+  if (!vs) return;
+}
+
+static int
+vnstk_expand(XokMalloc *xm, varnamestk *vs)
+{
+  if (!vs) return 0;
+  int new_size = vs->size * 2;
+  char **new_vn = (char **)xalloc_XokMalloc(xm, sizeof(char *) * new_size);
+  int   *new_slots = (int *)xalloc_XokMalloc(xm, sizeof(int) * new_size);
+  if (!new_vn || !new_slots) return 0;
+  memcpy(new_vn, vs->vn, sizeof(char *) * vs->count);
+  memcpy(new_slots, vs->slots, sizeof(int) * vs->count);
+  vs->vn    = new_vn;
+  vs->slots = new_slots;
+  vs->size  = new_size;
+  return 1;
+}
+
+static int
+vnstk_push(XokMalloc *xm, varnamestk *vs, const char *name, int slot)
+{
+  if (!vs) return 0;
+  if (vs->count >= vs->size) {
+      if (!vnstk_expand(xm, vs)) return 0;
+  }
+  vs->vn[vs->count]    = strdup(name);
+  vs->slots[vs->count] = slot;
+  vs->count++;
+  return 1;
+}
+
+static int
+vnstk_find(varnamestk *vs, const char *name)
+{
+  for (int i = 0; i < vs->count; i++) {
+    if (strcmp(vs->vn[i], name) == 0)return vs->slots[i];
+  }
+  return -1;
 }
 
 
@@ -91,9 +152,8 @@ assign_encode(XokMalloc *xm, craastdesc *node, bytecode *bc)
 
 
 static bytecode*
-assign_code(XokMalloc *xm , craastdesc *desc)
+assign_code(XokMalloc *xm , craastdesc *desc , bytecode *bc)
 {
-  bytecode *bc = bc_create(xm , BYTECODE_DEFAULT_SIZE);
   craastdesc *value = desc->as.assign.value;
   assign_encode(xm , value , bc);
   return bc;
@@ -104,12 +164,16 @@ void
 craC_bytecode_parse(XokMalloc *xm ,  desclist *dl)
 {
   int dl_c = 0;
-  bytecode *bc = NULL;
+  bytecode *bc = bc_create(xm , BYTECODE_DEFAULT_SIZE);
+  varnamestk *vns = vnstk_create(xm , 16);
   while(dl_c < dl->count){
     craastdesc *curdesc = dl->desclist[dl_c];
     switch(curdesc->kind){
       case AST_ASSIGN:{
-        bc = assign_code(xm , curdesc);
+        vnstk_push(xm , vns , curdesc->as.varname , dl_c);
+        assign_code(xm , curdesc , bc);
+        emit(xm , bc , OP_STORE);
+        emit(xm , bc , dl_c);
         dl_c++;
         break;
       }
